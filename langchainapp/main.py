@@ -44,4 +44,3 @@ while True:
         print("👋 Goodbye!")
         break
     response = chain.invoke({"input": user_input}, config={"configurable": {"session_id": session_id}})
-    print("AI:", response.content)
