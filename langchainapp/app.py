@@ -6,9 +6,9 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
 # Replace with your key or load from secrets
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]  
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"] 
 
-# LangChain setup
+# LangChain setup-1
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant."),
     ("human", "{input}")
