@@ -6,7 +6,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
 # Replace with your key or load from secrets
-os.environ["OPENAI_API_KEY"] = "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"  
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]  
 
 # LangChain setup
 prompt = ChatPromptTemplate.from_messages([
