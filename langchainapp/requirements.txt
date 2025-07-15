@@ -6,4 +6,3 @@ langchain-openai
 openai
 tiktoken
 python-dotenv
-streamlit
