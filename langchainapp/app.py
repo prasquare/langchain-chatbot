@@ -1,55 +1,43 @@
-import os
 import streamlit as st
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain.prompts import PromptTemplate
+from langchain.chains.question_answering import load_qa_chain
+from PyPDF2 import PdfReader
+import os
 
-# Replace with your key or load from secrets
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"] 
+# Load API key securely from secrets
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
-# LangChain setup-1
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant."),
-    ("human", "{input}")
-])
-llm = ChatOpenAI()
+# App UK
+st.title("📄 Chat with your PDF or Text File")
+uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
 
-store = {}
+if uploaded_file is not None:
+    if uploaded_file.type == "application/pdf":
+        pdf_reader = PdfReader(uploaded_file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+    else:
+        text = uploaded_file.read().decode("utf-8")
 
-def get_history(session_id: str):
-    if session_id not in store:
-        store[session_id] = InMemoryChatMessageHistory()
-    return store[session_id]
+    st.success("✅ File uploaded and text extracted!")
 
-chain = RunnableWithMessageHistory(
-    prompt | llm,
-    get_session_history=get_history,
-    input_messages_key="input",
-    history_messages_key="history"
-)
-
-# ✅ Streamlit chat interface
-st.set_page_config(page_title="LangChain Chat", layout="centered")
-st.title("💬 Chat with AI")
-
-if "session_id" not in st.session_state:
-    st.session_state.session_id = "user-web"
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# ✅ Chat input textbox at bottom
-user_input = st.chat_input("Say something...")
-
-if user_input:
-    st.session_state.chat_history.append(("user", user_input))
-    response = chain.invoke(
-        {"input": user_input},
-        config={"configurable": {"session_id": st.session_state.session_id}}
+    # Split text for processing
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=100
     )
-    st.session_state.chat_history.append(("ai", response.content))
+    chunks = splitter.split_text(text)
 
-# ✅ Display chat history with bubbles
-for role, message in st.session_state.chat_history:
-    with st.chat_message(role):
-        st.markdown(message)
+    # Ask a question
+    question = st.text_input("Ask a question about the file:")
+
+    if question:
+        llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+        chain = load_qa_chain(llm, chain_type="stuff")
+        response = chain.run(input_documents=chunks, question=question)
+
+        st.subheader("📌 Answer:")
+        st.write(response)
