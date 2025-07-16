@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = ""
 
 # 🤖 Prompt template for the assistant
 prompt = ChatPromptTemplate.from_messages([
